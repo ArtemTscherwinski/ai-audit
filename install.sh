@@ -35,19 +35,15 @@ echo "  6) Gemini CLI"
 echo "  7) Codex (OpenAI)"
 echo ""
 
-if [ -t 0 ]; then
-  # Direct terminal invocation: read from stdin (which IS the terminal)
-  read -p "Enter number [1-7] (default: 1): " CHOICE
-else
-  # Pipe mode: try piped stdin first (scripting/testing).
-  # If empty (curl|bash where bash consumed the pipe), fall back to /dev/tty
-  # so the user can still respond on their terminal.
-  read -r CHOICE 2>/dev/null || true
-  if [ -z "${CHOICE:-}" ]; then
-    echo -n "Enter number [1-7] (default: 1): "
-    read -r CHOICE < /dev/tty 2>/dev/null || CHOICE="1"
-  fi
-fi
+# Prompt on stderr so it's visible even when stdout is piped.
+# Try /dev/tty first (works for curl|bash in a real terminal),
+# fall back to stdin (direct invocation or scripted input),
+# default to 1 if nothing is readable.
+printf "Enter number [1-7] (default: 1): " >&2
+read -r CHOICE < /dev/tty 2>/dev/null || \
+  read -r CHOICE 2>/dev/null || \
+  CHOICE="1"
+CHOICE="${CHOICE:-1}"
 
 resolve_cli "$CHOICE"
 SKILL_DIR="$SKILL_DIR/$SKILL_NAME"
