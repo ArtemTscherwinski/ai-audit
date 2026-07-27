@@ -36,11 +36,17 @@ echo "  7) Codex (OpenAI)"
 echo ""
 
 if [ -t 0 ]; then
-  # Interactive terminal: prompt the user
+  # Direct terminal invocation: read from stdin (which IS the terminal)
   read -p "Enter number [1-7] (default: 1): " CHOICE
 else
-  # Non-interactive: try reading from stdin, default if empty (curl pipe = EOF)
-  read -r CHOICE 2>/dev/null || CHOICE="1"
+  # Pipe mode: try piped stdin first (scripting/testing).
+  # If empty (curl|bash where bash consumed the pipe), fall back to /dev/tty
+  # so the user can still respond on their terminal.
+  read -r CHOICE 2>/dev/null || true
+  if [ -z "${CHOICE:-}" ]; then
+    echo -n "Enter number [1-7] (default: 1): "
+    read -r CHOICE < /dev/tty 2>/dev/null || CHOICE="1"
+  fi
 fi
 
 resolve_cli "$CHOICE"
