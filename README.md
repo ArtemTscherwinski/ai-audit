@@ -1,160 +1,119 @@
 # ai-audit
 
-**Can AI agents actually work in your repo?** Find out in 30 seconds.
+**One command tells you why your AI coding assistant keeps getting things wrong — and fixes it.**
 
-`ai-audit` is a [Qoder](https://qoder.com) skill that scores any codebase across 7 dimensions of AI-agent friendliness — then offers to fix what's broken. Works with Claude Code, Cursor, Windsurf, Copilot, Gemini CLI, and more.
+## The problem
+
+Imagine hiring a brilliant contractor but giving them no blueprint, no house rules, and locking half the rooms. They'd guess at the wiring, knock down the wrong wall, and blame *you* for not being clear.
+
+That's what happens when an AI coding tool works in an unprepared project. It's not the AI's fault. It's the setup.
+
+## Who is this for?
+
+You, if you use AI coding tools but aren't a software engineer by training:
+
+- Data scientists working in backend repos
+- Researchers touching production code
+- Product managers fixing small things
+- Junior devs dropped into an unfamiliar codebase
+
+You don't need to know what "correct" looks like. That's what this tool tells you.
+
+## What you'll get
 
 ```
-┌─────────────────────────┬───────────┐
-│ Category                │ Level     │
-├─────────────────────────┼───────────┤
-│ Agent Instructions      │ Adequate  │
-│ Documentation Coverage  │ Minimal   │
-│ Nested Context          │ Good      │
-│ Code Navigability       │ Adequate  │
-│ Token Efficiency        │ Minimal   │
-│ Tooling & Automation    │ Good      │
-│ Guardrails              │ Missing   │
-├─────────────────────────┼───────────┤
-│ OVERALL                 │ Missing   │
-└─────────────────────────┴───────────┘
+┌──────────────────────────────────────────────────────────────────┬───────────┐
+│ Category                                                         │ Level     │
+├──────────────────────────────────────────────────────────────────┼───────────┤
+│ AI Instructions — Does the AI know the rules of this project?    │ Adequate  │
+│ Documentation — Are there guides the AI can read?                │ Minimal   │
+│ Sub-areas — Do complex parts have their own instructions?        │ Good      │
+│ Findability — Can the AI find the right file quickly?            │ Adequate  │
+│ Readability — Is the code easy for the AI to read?               │ Minimal   │
+│ Verification — Can the AI check its own work?                    │ Good      │
+│ Safety nets — Are there guards against the AI breaking things?   │ Missing   │
+├──────────────────────────────────────────────────────────────────┼───────────┤
+│ OVERALL                                                          │ Missing   │
+└──────────────────────────────────────────────────────────────────┴───────────┘
 
-Verdict: Claude Code can work here but will frequently misunderstand
-conventions and waste tokens on oversized files.
+Verdict: The AI can work here but will frequently misunderstand
+conventions and waste effort reading oversized files.
 
-Fix this first: Add pre-commit hooks and "do not touch" zones
-to prevent agents from modifying generated files.
+Fix this first: Add safety rules so the AI can't accidentally
+modify files it shouldn't touch.
 ```
-
-## Why?
-
-AI coding agents are only as good as the context they can load. A repo with no `CLAUDE.md`, 2000-line god files, and no type annotations forces agents to guess, hallucinate, and burn tokens reading implementations instead of signatures.
-
-**You don't need to be an expert in the stack.** Drop into any unfamiliar repo, run `/ai-audit`, and instantly know whether AI will be effective here — or what to fix first.
 
 ## Install
+
+Open your terminal (Terminal on Mac, PowerShell on Windows) and paste this:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ArtemTscherwinski/ai-audit/main/install.sh | bash
 ```
 
-Requires: Node.js 18+, [Qoder CLI](https://qoder.com)
+Don't have Node.js? [Install it here first](https://nodejs.org/) (pick the LTS version).
+
+This copies the skill into your Qoder skills folder. It doesn't modify your projects.
 
 ## Usage
 
 ```bash
-cd any-repo
+cd your-project
 qodercli
 > /ai-audit
 ```
 
-The skill asks which CLI you're targeting (defaults to **Claude Code**). Say "all" to audit for every supported CLI at once.
+Here's what happens:
 
-That's it. The skill runs structural checks (fast, deterministic), then applies LLM judgment where quality matters, and produces a scorecard with actionable fixes.
+1. **It scans your project** — takes a few seconds, reads file names and sizes. Nothing is changed.
+2. **It reads your docs and code** — judges quality where it matters. Still nothing is changed.
+3. **It shows you a scorecard** — then offers to fix problems one by one. You say yes or no to each fix. Nothing happens without your permission.
 
-## Supported CLIs
+## What it checks
 
-| CLI | Instruction files | Config |
-|-----|------------------|--------|
-| **Claude Code** (default) | `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md` | `.claude/settings.json` |
-| **Qoder** | `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md` | `.qoder/settings.json` |
-| **Cursor** | `.cursorrules`, `.cursor/rules/*.md` | `.cursor/settings.json` |
-| **Windsurf** | `.windsurfrules`, `.windsurf/rules/*.md` | — |
-| **GitHub Copilot** | `.github/copilot-instructions.md` | — |
-| **Gemini CLI** | `GEMINI.md` | — |
-| **Codex (OpenAI)** | `AGENTS.md`, `codex.md` | — |
+| # | What it looks at | In plain terms |
+|---|-----------------|----------------|
+| 1 | AI Instructions | Is there a file that tells the AI "here's how we do things here"? |
+| 2 | Documentation | Are there guides about the architecture, conventions, and domain? |
+| 3 | Sub-areas | Do complex parts of the project have their own AI instructions? |
+| 4 | Findability | Can the AI locate the right file without reading everything? |
+| 5 | Readability | Is the code structured so the AI understands it without wasting effort? |
+| 6 | Verification | Can the AI run tests to confirm its changes actually work? |
+| 7 | Safety nets | Are there rules preventing the AI from touching things it shouldn't? |
 
-The Agent Instructions and Guardrails categories check CLI-specific files. If you audit for Cursor, it looks for `.cursorrules` — not `CLAUDE.md`.
+## Scoring
 
-## The 7 Categories
+| Level | What it means for you |
+|-------|----------------------|
+| **Missing** | The AI is flying blind. Expect wrong guesses and broken things. |
+| **Minimal** | The AI has something to work with, but will still get things wrong often. |
+| **Adequate** | The AI works, with occasional misunderstandings you'll need to catch. |
+| **Good** | The AI works well. You'll rarely need to correct it. |
+| **Excellent** | The AI is fully set up for success. Minimal wasted effort, maximum accuracy. |
 
-| # | Category | What it measures |
-|---|----------|-----------------|
-| 1 | **Agent Instructions** | Are there explicit instructions for AI agents? (`CLAUDE.md`, `AGENTS.md`, nested context files) |
-| 2 | **Documentation Coverage** | Do docs cover architecture, conventions, domain? Are they current and linked? |
-| 3 | **Nested Context** | Do complex sub-packages have their own agent instructions? |
-| 4 | **Code Navigability** | Can an agent *find* the right file quickly? (naming, boundaries, indexes) |
-| 5 | **Token Efficiency** | Does reading code cost too much? (god files, missing types, boilerplate, no compression tools) |
-| 6 | **Tooling & Automation** | Can an agent *verify* its work? (tests, lint, typecheck, CI, one-command bootstrap) |
-| 7 | **Guardrails** | Are agents constrained safely? (hooks, "do not" zones, permission configs) |
+## Works with
 
-## Maturity Levels
+**AI tools:** Claude Code (default), Qoder, Cursor, Windsurf, GitHub Copilot, Gemini CLI, Codex
 
-| Level | Meaning |
-|-------|---------|
-| **Missing** | Nothing exists. Agent is blind. |
-| **Minimal** | Something exists but is thin. Agent will guess often. |
-| **Adequate** | Agent can work with occasional misunderstandings. |
-| **Good** | Agent works well. Minor friction only. |
-| **Excellent** | Actively optimized. Minimal token waste, maximum clarity. |
+**Languages:** TypeScript, Python, Go, Rust, Swift
 
-## Supported Stacks
+It automatically detects your project's language and AI tool, then checks for the right files.
 
-- TypeScript / JavaScript
-- Python
-- Go
-- Rust
-- Swift / SwiftUI
+## After the audit
 
-Polyglot repos are auto-detected — all relevant checks apply per directory.
+The skill offers fixes in priority order — worst problems first:
 
-## How It Works
+- Creates missing instruction files for the AI
+- Adds missing sections to existing docs
+- Describes code problems it found (but won't change your code unless you ask)
 
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  Structural  │────▶│ LLM Judgment │────▶│ Remediation  │
-│  Checks      │     │ (quality)    │     │ (fixes)      │
-│  (script)    │     │              │     │              │
-└──────────────┘     └──────────────┘     └──────────────┘
-   fast, free          reads docs,          scaffold, enrich,
-   deterministic       samples code         describe refactors
-```
-
-1. **Structural phase** — A TypeScript script checks file existence, line counts, config parsing, glob patterns. Outputs JSON. Zero LLM tokens.
-2. **Judgment phase** — The agent reads docs, samples code, cross-references docs against reality. Assigns maturity levels where quality matters.
-3. **Remediation** — Prioritized fixes. Missing categories first. Creates/enriches docs, describes (but doesn't execute) code refactors. You can bail at any point.
-
-## Token Efficiency Signals
-
-The audit flags anything that forces agents to consume more tokens than necessary:
-
-- Files over 500 lines (god files)
-- Missing type annotations (forces reading implementations)
-- Deep inheritance chains (4+ levels)
-- Circular dependencies
-- Scattered configuration
-- Repetitive boilerplate
-- Lock files / snapshots tracked without ignore directives
-- No context scoping in CLAUDE.md
-
-## Recommended Skills
-
-The audit checks whether you have these high-value productivity skills installed:
-
-| Skill | What it does |
-|-------|-------------|
-| [Graphify](https://github.com/Graphify-Labs/graphify) | Turns codebases into queryable knowledge graphs — agents understand structure without reading every file |
-| [Caveman](https://github.com/JuliusBrussee/caveman) | Cuts ~65% of output tokens by compressing agent communication |
-| [Ponytail](https://github.com/DietrichGebert/ponytail) | Makes agents think like the laziest senior dev — avoids over-engineering |
-| [Matt Pocock Skills](https://github.com/mattpocock/skills) | Engineering workflow skills (grilling, TDD, code review, debugging) |
-
-Missing recommended skills cap your Token Efficiency level at **Good** — you can't reach Excellent without them.
-
-## After the Audit
-
-The skill offers to fix issues in priority order:
-
-- **Scaffold** missing files (`CLAUDE.md`, `AGENTS.md`, nested context)
-- **Enrich** existing docs (add missing sections)
-- **Describe** code refactors (split that 2400-line file) — without executing them
-
-Optionally saves the report to `docs/ai-audit-report.md` for sharing with your team.
+You can stop at any point. You can also save the report to share with your team.
 
 ## Requirements
 
-- [Qoder CLI](https://qoder.com) installed
-- Node.js 18+ (for the structural check script)
-- Works on macOS, Linux
+- [Qoder CLI](https://qoder.com)
+- [Node.js 18+](https://nodejs.org/)
+- macOS or Linux
 
 ## License
 
