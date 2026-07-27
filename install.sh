@@ -4,26 +4,19 @@ set -euo pipefail
 SKILL_NAME="ai-audit"
 REPO_URL="https://github.com/ArtemTscherwinski/ai-audit"
 
-# Map CLI keys to display names and skill directories
-# Only Claude Code and Qoder support installable skills (SKILL.md format).
-# Other CLIs get a best-effort install path for reference.
-declare -A CLI_NAMES
-CLI_NAMES["1"]="Claude Code"
-CLI_NAMES["2"]="Qoder"
-CLI_NAMES["3"]="Cursor"
-CLI_NAMES["4"]="Windsurf"
-CLI_NAMES["5"]="GitHub Copilot"
-CLI_NAMES["6"]="Gemini CLI"
-CLI_NAMES["7"]="Codex (OpenAI)"
-
-declare -A CLI_DIRS
-CLI_DIRS["1"]="$HOME/.claude/skills"
-CLI_DIRS["2"]="$HOME/.qoder/skills"
-CLI_DIRS["3"]="$HOME/.cursor/skills"
-CLI_DIRS["4"]="$HOME/.windsurf/skills"
-CLI_DIRS["5"]="$HOME/.copilot/skills"
-CLI_DIRS["6"]="$HOME/.gemini/skills"
-CLI_DIRS["7"]="$HOME/.codex/skills"
+# Resolve CLI choice to display name and skill directory
+resolve_cli() {
+  case "${1:-1}" in
+    1|"") CLI_NAME="Claude Code";       SKILL_DIR="$HOME/.claude/skills"   ;;
+    2)    CLI_NAME="Qoder";             SKILL_DIR="$HOME/.qoder/skills"    ;;
+    3)    CLI_NAME="Cursor";            SKILL_DIR="$HOME/.cursor/skills"   ;;
+    4)    CLI_NAME="Windsurf";          SKILL_DIR="$HOME/.windsurf/skills" ;;
+    5)    CLI_NAME="GitHub Copilot";    SKILL_DIR="$HOME/.copilot/skills"  ;;
+    6)    CLI_NAME="Gemini CLI";        SKILL_DIR="$HOME/.gemini/skills"   ;;
+    7)    CLI_NAME="Codex (OpenAI)";    SKILL_DIR="$HOME/.codex/skills"    ;;
+    *)    CLI_NAME="Claude Code";       SKILL_DIR="$HOME/.claude/skills"   ;;
+  esac
+}
 
 echo "============================================"
 echo "  AI Audit — Installer"
@@ -43,15 +36,15 @@ echo "  7) Codex (OpenAI)"
 echo ""
 
 if [ -t 0 ]; then
+  # Interactive terminal: prompt the user
   read -p "Enter number [1-7] (default: 1): " CHOICE
 else
-  # Non-interactive (piped curl): default to Claude Code
-  CHOICE="1"
+  # Non-interactive: try reading from stdin, default if empty (curl pipe = EOF)
+  read -r CHOICE 2>/dev/null || CHOICE="1"
 fi
-CHOICE="${CHOICE:-1}"
 
-CLI_NAME="${CLI_NAMES[$CHOICE]:-Claude Code}"
-SKILL_DIR="${CLI_DIRS[$CHOICE]:-$HOME/.claude/skills}/$SKILL_NAME"
+resolve_cli "$CHOICE"
+SKILL_DIR="$SKILL_DIR/$SKILL_NAME"
 
 echo ""
 echo "→ Installing for: $CLI_NAME"
