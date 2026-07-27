@@ -4,7 +4,82 @@ import { join, relative, dirname } from "node:path";
 import { parse as parseTOML } from "smol-toml";
 import { parse as parseYAML } from "yaml";
 
-const ROOT = process.argv[2] || process.cwd();
+const args = process.argv.slice(2);
+let ROOT = process.cwd();
+let CLI = "claude-code";
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === "--cli" && args[i + 1]) {
+    CLI = args[i + 1];
+    i++;
+  } else if (!args[i].startsWith("--")) {
+    ROOT = args[i];
+  }
+}
+
+interface CliProfile {
+  name: string;
+  instructionFiles: string[];
+  instructionGlobs: string[];
+  configFiles: string[];
+  nestedInstructionFile: string;
+}
+
+const CLI_PROFILES: Record<string, CliProfile> = {
+  "claude-code": {
+    name: "Claude Code",
+    instructionFiles: ["CLAUDE.md", "AGENTS.md"],
+    instructionGlobs: [],
+    configFiles: [".claude/settings.json", ".claude/settings.local.json"],
+    nestedInstructionFile: "CLAUDE.md",
+  },
+  qoder: {
+    name: "Qoder",
+    instructionFiles: ["CLAUDE.md", "AGENTS.md"],
+    instructionGlobs: [],
+    configFiles: [".qoder/settings.json"],
+    nestedInstructionFile: "CLAUDE.md",
+  },
+  cursor: {
+    name: "Cursor",
+    instructionFiles: [".cursorrules"],
+    instructionGlobs: [".cursor/rules/*.md"],
+    configFiles: [".cursor/settings.json"],
+    nestedInstructionFile: ".cursorrules",
+  },
+  windsurf: {
+    name: "Windsurf",
+    instructionFiles: [".windsurfrules"],
+    instructionGlobs: [".windsurf/rules/*.md"],
+    configFiles: [],
+    nestedInstructionFile: ".windsurfrules",
+  },
+  copilot: {
+    name: "GitHub Copilot",
+    instructionFiles: [".github/copilot-instructions.md"],
+    instructionGlobs: [],
+    configFiles: [],
+    nestedInstructionFile: "",
+  },
+  gemini: {
+    name: "Gemini CLI",
+    instructionFiles: ["GEMINI.md"],
+    instructionGlobs: [],
+    configFiles: [],
+    nestedInstructionFile: "GEMINI.md",
+  },
+  codex: {
+    name: "Codex (OpenAI)",
+    instructionFiles: ["AGENTS.md", "codex.md"],
+    instructionGlobs: [],
+    configFiles: [],
+    nestedInstructionFile: "AGENTS.md",
+  },
+};
+
+const ALL_CLIS = Object.keys(CLI_PROFILES);
+const selectedClis = CLI === "all" ? ALL_CLIS : [CLI];
+const activeProfiles = selectedClis.map((c) => CLI_PROFILES[c]).filter(Boolean);
 
 type MaturityLevel = "missing" | "minimal" | "adequate" | "good" | "excellent";
 
@@ -22,6 +97,8 @@ interface CategoryResult {
 
 interface AuditResult {
   root: string;
+  cli: string;
+  cliNames: string[];
   stacks: string[];
   monorepo: { isMonorepo: boolean; boundaries: string[] };
   categories: Record<string, CategoryResult>;
@@ -121,25 +198,53 @@ function detectMonorepo(): { isMonorepo: boolean; boundaries: string[] } {
 
 function auditAgentInstructions(): CategoryResult {
   const findings: Record<string, unknown> = {};
+  findings.cli = CLI;
 
-  const claudeMd = fileExists("CLAUDE.md");
-  const agentsMd = fileExists("AGENTS.md");
-  findings.claudeMd = claudeMd;
-  findings.agentsMd = agentsMd;
+  const perCli: Record<string, Record<string, unknown>> = {};
+  let anyInstructionsFound = false;
 
-  if (claudeMd) {
-    findings.claudeMdLines = countLines("CLAUDE.md");
-    const content = readFile("CLAUDE.md") || "";
-    findings.claudeMdHasDoNot = /do not|don't|never|avoid|forbidden/i.test(content);
-    findings.claudeMdHasCommands = /```|npm |yarn |pnpm |make |cargo |go |pytest|swift /i.test(content);
-    findings.claudeMdHasArchitecture = /architect|structure|overview|layout/i.test(content);
-    findings.claudeMdHasConventions = /convention|style|pattern|naming/i.test(content);
+  for (const profile of activeProfiles) {
+    const cliResult: Record<string, unknown> = {};
+
+    const foundFiles: string[] = [];
+    for (const f of profile.instructionFiles) {
+      if (fileExists(f)) foundFiles.push(f);
+    }
+    for (const g of profile.instructionGlobs) {
+      foundFiles.push(...globSync(g));
+    }
+    cliResult.instructionFiles = foundFiles;
+
+    const foundConfigs: string[] = [];
+    for (const c of profile.configFiles) {
+      if (fileExists(c)) foundConfigs.push(c);
+    }
+    cliResult.configFiles = foundConfigs;
+
+    if (foundFiles.length > 0) {
+      anyInstructionsFound = true;
+      const primaryFile = foundFiles[0];
+      const content = readFile(primaryFile) || "";
+      cliResult.lines = content.split("\n").length;
+      cliResult.hasDoNot = /do not|don't|never|avoid|forbidden/i.test(content);
+      cliResult.hasCommands = /```|npm |yarn |pnpm |make |cargo |go |pytest|swift /i.test(content);
+      cliResult.hasArchitecture = /architect|structure|overview|layout/i.test(content);
+      cliResult.hasConventions = /convention|style|pattern|naming/i.test(content);
+    }
+
+    if (profile.nestedInstructionFile) {
+      const nested = globSync(`**/${profile.nestedInstructionFile}`).filter(
+        (f) => !profile.instructionFiles.includes(f)
+      );
+      cliResult.nestedFiles = nested;
+    }
+
+    perCli[profile.name] = cliResult;
   }
 
-  const nestedClaudeMds = globSync("**/CLAUDE.md").filter((f) => f !== "CLAUDE.md");
-  findings.nestedClaudeMds = nestedClaudeMds;
+  findings.perCli = perCli;
 
-  if (!claudeMd && !agentsMd) {
+  if (!anyInstructionsFound) {
     return { level: "missing", findings, needsJudgment: false };
   }
 
@@ -432,25 +537,41 @@ function auditGuardrails(): CategoryResult {
   findings.preCommitHooks = { husky, lefthook, preCommit, gitHooks };
   findings.hasPreCommitHooks = husky || lefthook || preCommit || gitHooks;
 
-  const claudeMd = readFile("CLAUDE.md") || "";
-  const agentsMd = readFile("AGENTS.md") || "";
-  const instructionContent = claudeMd + agentsMd;
+  let instructionContent = "";
+  for (const profile of activeProfiles) {
+    for (const f of profile.instructionFiles) {
+      instructionContent += readFile(f) || "";
+    }
+    for (const g of profile.instructionGlobs) {
+      for (const match of globSync(g)) {
+        instructionContent += readFile(match) || "";
+      }
+    }
+  }
   findings.hasDoNotZones = /do not|don't|never|avoid|forbidden|off.limits|restricted/i.test(instructionContent);
   findings.hasProtectedPaths = /don't (touch|modify|edit|change)|do not (touch|modify|edit|change)|never (touch|modify|edit|change)/i.test(instructionContent);
 
-  const claudeSettings = readFile(".claude/settings.json") || readFile(".claude/settings.local.json");
-  findings.hasClaudeSettings = !!claudeSettings;
-  if (claudeSettings) {
-    try {
-      const parsed = JSON.parse(claudeSettings);
-      findings.hasDeniedPermissions = !!(parsed.deny || parsed.disallowedTools);
-    } catch {}
+  let hasCliSettings = false;
+  let hasDeniedPermissions = false;
+  for (const profile of activeProfiles) {
+    for (const c of profile.configFiles) {
+      const content = readFile(c);
+      if (content) {
+        hasCliSettings = true;
+        try {
+          const parsed = JSON.parse(content);
+          if (parsed.deny || parsed.disallowedTools) hasDeniedPermissions = true;
+        } catch {}
+      }
+    }
   }
+  findings.hasCliSettings = hasCliSettings;
+  findings.hasDeniedPermissions = hasDeniedPermissions;
 
   const branchProtection = globSync(".github/CODEOWNERS").length > 0 || fileExists("CODEOWNERS") || fileExists(".github/CODEOWNERS");
   findings.hasCodeowners = branchProtection;
 
-  const layers = [findings.hasPreCommitHooks, findings.hasDoNotZones, findings.hasClaudeSettings].filter(Boolean).length;
+  const layers = [findings.hasPreCommitHooks, findings.hasDoNotZones, hasCliSettings].filter(Boolean).length;
 
   if (layers === 0) {
     return { level: "missing", findings, needsJudgment: false };
@@ -468,6 +589,8 @@ function main() {
 
   const result: AuditResult = {
     root: ROOT,
+    cli: CLI,
+    cliNames: activeProfiles.map((p) => p.name),
     stacks,
     monorepo,
     categories: {

@@ -9,20 +9,45 @@ Audit the current repo for AI-agent friendliness. Produce a maturity scorecard a
 
 ## Audience
 
-The user may be a non-expert dropping into an unfamiliar codebase. They want to know: "Can Qoder work effectively here, or will it hallucinate and waste my time?" Use plain language for verdicts, technical detail underneath.
+The user may be a non-expert dropping into an unfamiliar codebase. They want to know: "Can an AI agent work effectively here, or will it hallucinate and waste my time?" Use plain language for verdicts, technical detail underneath.
+
+## Supported CLIs
+
+| CLI | Instruction files | Config |
+|-----|------------------|--------|
+| **Claude Code** (default) | `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md` | `.claude/settings.json` |
+| **Qoder** | `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md` | `.qoder/settings.json` |
+| **Cursor** | `.cursorrules`, `.cursor/rules/*.md` | `.cursor/settings.json` |
+| **Windsurf** | `.windsurfrules`, `.windsurf/rules/*.md` | — |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | — |
+| **Gemini CLI** | `GEMINI.md` | — |
+| **Codex (OpenAI)** | `AGENTS.md`, `codex.md` | — |
+
+## Phase 0: CLI Selection
+
+Ask the user which CLI they want to audit for. Default to **Claude Code** if they don't specify.
+
+If the user says "all" or "multi", audit for all CLIs and report coverage per CLI in the Agent Instructions category.
+
+Pass the selected CLI to the script via the `--cli` flag:
+
+```bash
+npx tsx <skill-dir>/scripts/audit.ts --cli claude-code
+```
 
 ## Phase 1: Structural Audit
 
 Run the structural check script:
 
 ```bash
-npx tsx <skill-dir>/scripts/audit.ts
+npx tsx <skill-dir>/scripts/audit.ts --cli <selected-cli>
 ```
 
 Where `<skill-dir>` is the directory containing this SKILL.md file. The script outputs JSON with:
 - Detected tech stacks
 - Monorepo boundaries
 - Per-category structural findings with pre-computed maturity levels where deterministic
+- CLI-specific instruction file detection
 
 If the script fails (missing dependencies), run `npm install` in the skill directory first.
 
