@@ -1,12 +1,28 @@
-# ai-audit
+<p align="center">
+  <img src="assets/logo.png" width="200" alt="ai-audit">
+</p>
 
-**One command tells you why your AI coding assistant keeps getting things wrong — and fixes it.**
+<h1 align="center">ai-audit</h1>
+
+<p align="center">
+  <em>Think of it as a building inspection before you let the AI move in.<br>It checks the wiring, the locks, and the blueprint — then hands you a punch list.</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/ArtemTscherwinski/ai-audit?style=flat-square&color=111111&label=stars" alt="Stars">
+  <img src="https://img.shields.io/badge/works%20with-7%20AI%20tools-111111?style=flat-square" alt="Works with 7 AI tools">
+  <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT license">
+</p>
+
+---
 
 ## The problem
 
 Imagine hiring a brilliant contractor but giving them no blueprint, no house rules, and locking half the rooms. They'd guess at the wiring, knock down the wrong wall, and blame *you* for not being clear.
 
 That's what happens when an AI coding tool works in an unprepared project. It's not the AI's fault. It's the setup.
+
+Most developers can't keep up with how fast AI tooling evolves. This is your starting point — the minimum viable setup for a codebase where AI actually works.
 
 ## Who is this for?
 
@@ -19,7 +35,13 @@ You, if you use AI coding tools but aren't a software engineer by training:
 
 You don't need to know what "correct" looks like. That's what this tool tells you.
 
-## What you'll get
+## Before / After
+
+**Before:** The AI reads a 2000-line file it didn't need to, guesses at your team's conventions, and accidentally modifies a generated file that breaks the build.
+
+**After:** The AI knows the rules, reads only what it needs, checks its own work, and can't touch anything it shouldn't.
+
+Here's what the inspection report looks like:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┬───────────┐
@@ -43,7 +65,11 @@ Fix this first: Add safety rules so the AI can't accidentally
 modify files it shouldn't touch.
 ```
 
-## Install
+**How to read it:** Missing means the AI is flying blind — expect wrong guesses. Excellent means it's fully set up for success. Everything in between is a sliding scale of "how often will you need to correct it?" The overall score is always the weakest link.
+
+## Get started
+
+One command. Ten seconds. No config files to write.
 
 Open your terminal (Terminal on Mac, PowerShell on Windows) and paste this:
 
@@ -53,47 +79,21 @@ curl -fsSL https://raw.githubusercontent.com/ArtemTscherwinski/ai-audit/main/ins
 
 Don't have Node.js? [Install it here first](https://nodejs.org/) (pick the LTS version).
 
-This copies the skill into your Qoder skills folder. It doesn't modify your projects.
+This copies the skill into your Claude Code skills folder. It doesn't modify your projects.
 
-## Usage
+Then, in any project:
 
 ```bash
 cd your-project
-qodercli
+claude
 > /ai-audit
 ```
 
-Here's what happens:
-
-1. **It scans your project** — takes a few seconds, reads file names and sizes. Nothing is changed.
-2. **It reads your docs and code** — judges quality where it matters. Still nothing is changed.
-3. **It shows you a scorecard** — then offers to fix problems one by one. You say yes or no to each fix. Nothing happens without your permission.
-
-## What it checks
-
-| # | What it looks at | In plain terms |
-|---|-----------------|----------------|
-| 1 | AI Instructions | Is there a file that tells the AI "here's how we do things here"? |
-| 2 | Documentation | Are there guides about the architecture, conventions, and domain? |
-| 3 | Sub-areas | Do complex parts of the project have their own AI instructions? |
-| 4 | Findability | Can the AI locate the right file without reading everything? |
-| 5 | Readability | Is the code structured so the AI understands it without wasting effort? |
-| 6 | Verification | Can the AI run tests to confirm its changes actually work? |
-| 7 | Safety nets | Are there rules preventing the AI from touching things it shouldn't? |
-
-## Scoring
-
-| Level | What it means for you |
-|-------|----------------------|
-| **Missing** | The AI is flying blind. Expect wrong guesses and broken things. |
-| **Minimal** | The AI has something to work with, but will still get things wrong often. |
-| **Adequate** | The AI works, with occasional misunderstandings you'll need to catch. |
-| **Good** | The AI works well. You'll rarely need to correct it. |
-| **Excellent** | The AI is fully set up for success. Minimal wasted effort, maximum accuracy. |
+That's it. You'll see a scorecard in about 30 seconds. The skill walks you through fixes one by one — you say yes or no to each. Nothing changes without your permission.
 
 ## Works with
 
-**AI tools:** Claude Code (default), Qoder, Cursor, Windsurf, GitHub Copilot, Gemini CLI, Codex
+**AI tools:** Claude Code (default), Cursor, Windsurf, GitHub Copilot, Gemini CLI, Codex, Qoder
 
 **Languages:** TypeScript, Python, Go, Rust, Swift
 
@@ -101,20 +101,24 @@ It automatically detects your project's language and AI tool, then checks for th
 
 ## After the audit
 
-The skill offers fixes in priority order — worst problems first:
+The inspector hands you a punch list, worst problems first:
 
-- Creates missing instruction files for the AI
+- Creates missing instruction files so the AI knows the rules
 - Adds missing sections to existing docs
-- Describes code problems it found (but won't change your code unless you ask)
+- Points out code problems (but won't change your code unless you ask)
 
 You can stop at any point. You can also save the report to share with your team.
 
 ## Requirements
 
-- [Qoder CLI](https://qoder.com)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (or another supported AI tool)
 - [Node.js 18+](https://nodejs.org/)
 - macOS or Linux
 
 ## License
 
 MIT
+
+---
+
+Found a problem or have an idea? [Open an issue](https://github.com/ArtemTscherwinski/ai-audit/issues) — it helps.
