@@ -2,7 +2,7 @@
 
 **Can AI agents actually work in your repo?** Find out in 30 seconds.
 
-`ai-audit` is a [Qoder](https://qoder.com) skill that scores any codebase across 7 dimensions of AI-agent friendliness — then offers to fix what's broken.
+`ai-audit` is a [Qoder](https://qoder.com) skill that scores any codebase across 7 dimensions of AI-agent friendliness — then offers to fix what's broken. Works with Claude Code, Cursor, Windsurf, Copilot, Gemini CLI, and more.
 
 ```
 ┌─────────────────────────┬───────────┐
@@ -19,7 +19,7 @@
 │ OVERALL                 │ Missing   │
 └─────────────────────────┴───────────┘
 
-Verdict: Qoder can work here but will frequently misunderstand
+Verdict: Claude Code can work here but will frequently misunderstand
 conventions and waste tokens on oversized files.
 
 Fix this first: Add pre-commit hooks and "do not touch" zones
@@ -48,7 +48,23 @@ qodercli
 > /ai-audit
 ```
 
+The skill asks which CLI you're targeting (defaults to **Claude Code**). Say "all" to audit for every supported CLI at once.
+
 That's it. The skill runs structural checks (fast, deterministic), then applies LLM judgment where quality matters, and produces a scorecard with actionable fixes.
+
+## Supported CLIs
+
+| CLI | Instruction files | Config |
+|-----|------------------|--------|
+| **Claude Code** (default) | `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md` | `.claude/settings.json` |
+| **Qoder** | `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md` | `.qoder/settings.json` |
+| **Cursor** | `.cursorrules`, `.cursor/rules/*.md` | `.cursor/settings.json` |
+| **Windsurf** | `.windsurfrules`, `.windsurf/rules/*.md` | — |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | — |
+| **Gemini CLI** | `GEMINI.md` | — |
+| **Codex (OpenAI)** | `AGENTS.md`, `codex.md` | — |
+
+The Agent Instructions and Guardrails categories check CLI-specific files. If you audit for Cursor, it looks for `.cursorrules` — not `CLAUDE.md`.
 
 ## The 7 Categories
 
