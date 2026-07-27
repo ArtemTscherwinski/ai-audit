@@ -345,6 +345,24 @@ function auditTokenEfficiency(stacks: string[]): CategoryResult {
   const claudeMd = readFile("CLAUDE.md");
   findings.claudeMdHasIgnoreDirectives = claudeMd ? /ignore|don't read|skip|exclude/i.test(claudeMd) : false;
 
+  const homeDir = process.env.HOME || process.env.USERPROFILE || "";
+  const skillsDir = join(homeDir, ".qoder", "skills");
+  const recommendedSkills = [
+    { name: "graphify", dirs: ["graphify"], repo: "Graphify-Labs/graphify" },
+    { name: "caveman", dirs: ["caveman"], repo: "JuliusBrussee/caveman" },
+    { name: "ponytail", dirs: ["ponytail"], repo: "DietrichGebert/ponytail" },
+    { name: "mattpocock-skills", dirs: ["grilling", "tdd", "code-review", "diagnosing-bugs"], repo: "mattpocock/skills" },
+  ];
+  const installedSkills: string[] = [];
+  const missingSkills: { name: string; repo: string }[] = [];
+  for (const skill of recommendedSkills) {
+    const found = skill.dirs.some((d) => existsSync(join(skillsDir, d)));
+    if (found) installedSkills.push(skill.name);
+    else missingSkills.push({ name: skill.name, repo: skill.repo });
+  }
+  findings.recommendedSkillsInstalled = installedSkills;
+  findings.recommendedSkillsMissing = missingSkills;
+
   if (godFiles.length === 0 && trackedWasteful.length === 0) {
     return { level: null, findings, needsJudgment: true };
   }

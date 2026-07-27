@@ -111,6 +111,19 @@ The audit flags anything that forces agents to consume more tokens than necessar
 - Lock files / snapshots tracked without ignore directives
 - No context scoping in CLAUDE.md
 
+## Recommended Skills
+
+The audit checks whether you have these high-value productivity skills installed:
+
+| Skill | What it does |
+|-------|-------------|
+| [Graphify](https://github.com/Graphify-Labs/graphify) | Turns codebases into queryable knowledge graphs — agents understand structure without reading every file |
+| [Caveman](https://github.com/JuliusBrussee/caveman) | Cuts ~65% of output tokens by compressing agent communication |
+| [Ponytail](https://github.com/DietrichGebert/ponytail) | Makes agents think like the laziest senior dev — avoids over-engineering |
+| [Matt Pocock Skills](https://github.com/mattpocock/skills) | Engineering workflow skills (grilling, TDD, code review, debugging) |
+
+Missing recommended skills cap your Token Efficiency level at **Good** — you can't reach Excellent without them.
+
 ## After the Audit
 
 The skill offers to fix issues in priority order:

@@ -168,3 +168,22 @@ Flag these as token-wasteful:
 - Repetitive boilerplate (40+ near-identical files)
 - Lock files, snapshots, generated code tracked without ignore directives
 - No context scoping in CLAUDE.md (agent must explore blindly)
+
+## Recommended Skills Check
+
+Check whether the user has these high-value skills installed in `~/.qoder/skills/`:
+
+| Skill | Directory name | What it does | Install |
+|-------|---------------|--------------|---------|
+| Graphify | `graphify` | Turns codebases into queryable knowledge graphs — agents understand structure without reading every file | `github.com/Graphify-Labs/graphify` |
+| Caveman | `caveman` | Cuts ~65% of output tokens by compressing agent communication | `github.com/JuliusBrussee/caveman` |
+| Ponytail | `ponytail` | Makes agents think like the laziest senior dev — avoids over-engineering | `github.com/DietrichGebert/ponytail` |
+| Matt Pocock Skills | any of: `grilling`, `tdd`, `code-review`, `diagnosing-bugs` | Engineering workflow skills (grilling, TDD, code review, debugging) | `github.com/mattpocock/skills` |
+
+Check by listing `~/.qoder/skills/` and matching directory names. Report findings in the Token Efficiency detail section:
+
+- Which recommended skills are installed
+- Which are missing, with a one-line description of what the user gains by installing each
+- Install command for each missing skill
+
+Missing recommended skills cap the Token Efficiency level at **Good** (cannot reach Excellent without them). This check is informational — never auto-install skills without explicit user confirmation.
