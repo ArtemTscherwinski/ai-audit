@@ -26,14 +26,11 @@ Most developers can't keep up with how fast AI tooling evolves. This is your sta
 
 ## Who is this for?
 
-You, if you use AI coding tools but aren't a software engineer by training:
+Two kinds of people:
 
-- Data scientists working in backend repos
-- Researchers touching production code
-- Product managers fixing small things
-- Junior devs dropped into an unfamiliar codebase
+**You just landed in a new repo.** Someone handed you a codebase, you opened it, and you have no idea where to start. ai-audit gives you a map — what matters, what to ignore, where the footguns are. You don't need to know what "correct" looks like. That's what this tool tells you.
 
-You don't need to know what "correct" looks like. That's what this tool tells you.
+**You already work with AI, and it's… fine.** You get decent results, but sometimes the AI wanders off. You fix things manually. You wonder if there's a better setup. There is. ai-audit finds the gaps in your project's AI readiness and helps you close them — one fix at a time, nothing changes without your permission.
 
 ## Before / After
 
@@ -77,9 +74,9 @@ Open your terminal (Terminal on Mac, PowerShell on Windows) and paste this:
 curl -fsSL https://raw.githubusercontent.com/ArtemTscherwinski/ai-audit/main/install.sh | bash
 ```
 
-Don't have Node.js? [Install it here first](https://nodejs.org/) (pick the LTS version).
+The installer asks which AI CLI you're using (Claude Code, Qoder, Cursor, Codex, …) and installs the skill there. Don't have Node.js? [Install it here first](https://nodejs.org/) (pick the LTS version).
 
-This copies the skill into your Claude Code skills folder. It doesn't modify your projects.
+This copies the skill into the right folder for your AI tool. It doesn't modify your projects.
 
 Then, in any project:
 
