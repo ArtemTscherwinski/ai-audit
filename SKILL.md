@@ -79,7 +79,7 @@ For categories where `needsJudgment: true`, read the relevant files and assign a
 
 **4. Code Navigability** — Can an agent *find* the right file? Check: naming conventions, module boundaries, index/barrel files, directory structure clarity. Sample 3-5 source files.
 
-**5. Token Efficiency** — Does reading/understanding code cost too much? Check: god files (2k+ lines), missing type information forcing implementation reads, deep inheritance chains, circular dependencies, scattered configuration, repetitive boilerplate. Also check if token-saving tools are leveraged (Caveman-style compression, graph representations, context scoping in CLAUDE.md).
+**5. Token Efficiency** — Does reading/understanding code cost too much? Check: god files (2k+ lines), missing type information forcing implementation reads, deep inheritance chains, circular dependencies, scattered configuration, repetitive boilerplate, context scoping in CLAUDE.md.
 
 **6. Tooling & Automation** — Can an agent verify its work? Check: test commands documented and runnable, linting configured, type checking active, CI present, one-command bootstrap from fresh clone possible.
 
@@ -87,9 +87,13 @@ For categories where `needsJudgment: true`, read the relevant files and assign a
 
 ## Phase 4: Report
 
-Output format:
+The report is delivered in two steps to avoid output truncation.
 
-### Summary Table
+### Step 1: Compact Report (always output)
+
+Keep the entire Step 1 output under 40 lines. No prose paragraphs — only the table, one sentence, and a numbered list.
+
+1. **Summary Table** — one row per category. If a category is not applicable (e.g. Nested Context in a single-package repo), show "N/A" instead of a level and exclude it from the overall calculation.
 
 ```
 ┌─────────────────────────┬───────────┐
@@ -97,28 +101,29 @@ Output format:
 ├─────────────────────────┼───────────┤
 │ Agent Instructions      │ Adequate  │
 │ Documentation Coverage  │ Minimal   │
+│ Nested Context          │ N/A       │
 │ ...                     │ ...       │
 ├─────────────────────────┼───────────┤
 │ OVERALL                 │ Minimal   │
 └─────────────────────────┴───────────┘
 ```
 
-Overall = the lowest (weakest link) category level.
+Overall = the lowest level among applicable categories (weakest link).
 
-### One-Line Verdict
+2. **One-line verdict** — plain language, max 25 words.
 
-A plain-language sentence: e.g. "Qoder can work here but will frequently misunderstand conventions and waste tokens on oversized files."
+3. **Fix This First** — the top 3 highest-impact fixes as a numbered list. Each item: one sentence stating what to do and why. No tool recommendations.
 
-### Fix This First
+End Step 1 with: "Want details on any category? Name it, or say 'all'."
 
-The single highest-impact recommendation — the Missing/Minimal category whose improvement would most raise the overall level.
+### Step 2: Detail Sections (on request)
 
-### Detail Sections
+Only output when the user asks. For each requested category NOT at Excellent, provide:
+- **Verdict** (1 sentence, no jargon)
+- **Findings** (bullet list: specific files, line counts, missing configs)
+- **Fix** (one actionable sentence)
 
-For each category NOT at Excellent, provide:
-- **Plain-language verdict** (1-2 sentences, no jargon)
-- **Technical findings** (specific files, line counts, missing configs)
-- **Suggested fix** (what to create/change)
+Keep each category detail under 15 lines. Never output all 7 categories in a single response unless the user explicitly says "all" — even then, split into two responses if needed.
 
 ## Phase 5: Remediation
 
@@ -194,21 +199,3 @@ Flag these as token-wasteful:
 - Lock files, snapshots, generated code tracked without ignore directives
 - No context scoping in CLAUDE.md (agent must explore blindly)
 
-## Recommended Skills Check
-
-Check whether the user has these high-value skills installed in `~/.qoder/skills/`:
-
-| Skill | Directory name | What it does | Install |
-|-------|---------------|--------------|---------|
-| Graphify | `graphify` | Turns codebases into queryable knowledge graphs — agents understand structure without reading every file | `github.com/Graphify-Labs/graphify` |
-| Caveman | `caveman` | Cuts ~65% of output tokens by compressing agent communication | `github.com/JuliusBrussee/caveman` |
-| Ponytail | `ponytail` | Makes agents think like the laziest senior dev — avoids over-engineering | `github.com/DietrichGebert/ponytail` |
-| Matt Pocock Skills | any of: `grilling`, `tdd`, `code-review`, `diagnosing-bugs` | Engineering workflow skills (grilling, TDD, code review, debugging) | `github.com/mattpocock/skills` |
-
-Check by listing `~/.qoder/skills/` and matching directory names. Report findings in the Token Efficiency detail section:
-
-- Which recommended skills are installed
-- Which are missing, with a one-line description of what the user gains by installing each
-- Install command for each missing skill
-
-Missing recommended skills cap the Token Efficiency level at **Good** (cannot reach Excellent without them). This check is informational — never auto-install skills without explicit user confirmation.
